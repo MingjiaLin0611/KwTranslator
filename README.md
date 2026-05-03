@@ -22,6 +22,7 @@ npm run test:coverage
 npm run compile
 npm run build
 npm run test:e2e
+npm run test:e2e:extension
 ```
 
-The default E2E command runs a browser harness against the built content script. The real extension-loading E2E case is present but skipped unless `KW_E2E_EXTENSION=1` is set and Playwright Chromium is available.
+The default E2E command runs a browser harness against the built content script. `npm run test:e2e:extension` runs the real extension-loading E2E test and uses Playwright Chromium from `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` or the local Playwright browser cache.
