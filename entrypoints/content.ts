@@ -1,9 +1,9 @@
-import { builtinDictionary } from "../src/core/dictionary";
-import { injectInlineTranslations } from "../src/core/injector";
+import { runPageTranslation } from "../src/core/runtime";
+import { createBrowserTranslatorStorage } from "../src/core/storage";
 
 export default defineContentScript({
   matches: ["<all_urls>"],
   main() {
-    injectInlineTranslations(document.body, builtinDictionary.entries);
+    void runPageTranslation(document, createBrowserTranslatorStorage());
   }
 });

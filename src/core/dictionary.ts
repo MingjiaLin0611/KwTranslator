@@ -75,7 +75,65 @@ export function validateDictionary(dictionary: KeywordDictionary): DictionaryImp
   };
 }
 
-function validateEntry(entry: KeywordEntry): string | undefined {
+export function parseDictionaryImport(input: string): DictionaryImportResult {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(input);
+  } catch {
+    return invalidImport(input, "import must be valid JSON");
+  }
+
+  if (!isDictionaryShape(parsed)) {
+    return invalidImport(parsed, "import must be a dictionary object");
+  }
+
+  return validateDictionary(parsed);
+}
+
+export function mergeDictionaries(
+  builtin: KeywordDictionary,
+  user: KeywordDictionary | undefined
+): KeywordDictionary {
+  if (!user) return builtin;
+
+  const entriesByKeyword = new Map<string, KeywordEntry>();
+
+  for (const entry of builtin.entries) {
+    entriesByKeyword.set(normalizeKeyword(entry.keyword), entry);
+  }
+
+  for (const entry of user.entries) {
+    entriesByKeyword.set(normalizeKeyword(entry.keyword), entry);
+  }
+
+  return {
+    schemaVersion: builtin.schemaVersion,
+    dictionaryVersion: `${builtin.dictionaryVersion}+${user.dictionaryVersion}`,
+    name: `${builtin.name} + ${user.name}`,
+    entries: [...entriesByKeyword.values()]
+  };
+}
+
+export function createDictionaryExport(dictionary: KeywordDictionary): string {
+  return JSON.stringify(
+    {
+      ...dictionary,
+      exportedAt: new Date().toISOString()
+    },
+    null,
+    2
+  );
+}
+
+function validateEntry(entry: unknown): string | undefined {
+  if (!isRecord(entry)) return "entry must be an object";
+  if (typeof entry.id !== "string") return "id is required";
+  if (typeof entry.keyword !== "string") return "keyword is required";
+  if (typeof entry.translation !== "string") return "translation is required";
+  if (typeof entry.domain !== "string") return "domain is required";
+  if (typeof entry.caseSensitive !== "boolean") return "caseSensitive is required";
+  if (typeof entry.enabled !== "boolean") return "enabled is required";
   if (!entry.id.trim()) return "id is required";
   if (!entry.keyword.trim()) return "keyword is required";
   if (!entry.translation.trim()) return "translation is required";
@@ -84,4 +142,32 @@ function validateEntry(entry: KeywordEntry): string | undefined {
   if (!["builtin", "user", "ai"].includes(entry.source)) return "source is unsupported";
   if (!Number.isInteger(entry.version) || entry.version < 1) return "version must be a positive integer";
   return undefined;
+}
+
+function normalizeKeyword(keyword: string): string {
+  return keyword.trim().toLocaleLowerCase();
+}
+
+function invalidImport(entry: unknown, reason: string): DictionaryImportResult {
+  return {
+    valid: false,
+    accepted: [],
+    rejected: [{ entry, reason }],
+    conflicts: [],
+    schemaCompatible: false
+  };
+}
+
+function isDictionaryShape(value: unknown): value is KeywordDictionary {
+  return (
+    isRecord(value) &&
+    typeof value.schemaVersion === "number" &&
+    typeof value.dictionaryVersion === "string" &&
+    typeof value.name === "string" &&
+    Array.isArray(value.entries)
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, any> {
+  return typeof value === "object" && value !== null;
 }
