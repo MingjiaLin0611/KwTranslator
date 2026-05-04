@@ -39,3 +39,37 @@ dd {
   margin: 0;
   font-weight: 650;
 }
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+button {
+  border: 1px solid #c9ced8;
+  border-radius: 6px;
+  background: #fff;
+  color: #172026;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  padding: 7px 10px;
+}
+
+button:disabled {
+  color: #8a98a3;
+  cursor: not-allowed;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.error {
+  color: #b42318;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 12px 0 0;
+}
