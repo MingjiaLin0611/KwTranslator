@@ -3,6 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it } from "vitest";
 import { App } from "../../entrypoints/popup/main";
+import { builtinDictionary } from "@/core/dictionary";
 import { defaultSettings, type TranslatorStorage } from "@/core/storage";
 import type { KeywordDictionary } from "@/core/types";
 
@@ -23,14 +24,29 @@ describe("popup", () => {
     await renderPopup(createFakeTranslatorStorage());
 
     expect(text("status")).toBe("Enabled");
-    expect(text("builtin-count")).toBe("3");
+    expect(text("builtin-count")).toBe(String(builtinDictionary.entries.length));
     expect(text("user-count")).toBe("1");
-    expect(text("total-count")).toBe("4");
+    expect(text("total-count")).toBe(String(builtinDictionary.entries.length + 1));
   });
 
   it("persists enabled state changes", async () => {
     const storage = createFakeTranslatorStorage();
-    await renderPopup(storage);
+    const messenger = createFakeToggleMessenger();
+    await renderPopup(storage, messenger.notifyEnabledState);
+
+    await act(async () => {
+      button("toggle-enabled").click();
+    });
+
+    expect(await storage.getSettings()).toEqual({ ...defaultSettings, enabled: false });
+    expect(messenger.calls).toEqual([false]);
+    expect(text("status")).toBe("Disabled");
+  });
+
+  it("keeps saved state when current tab cannot receive the toggle message", async () => {
+    const storage = createFakeTranslatorStorage();
+    const messenger = createFakeToggleMessenger(new Error("no receiver"));
+    await renderPopup(storage, messenger.notifyEnabledState);
 
     await act(async () => {
       button("toggle-enabled").click();
@@ -58,13 +74,13 @@ describe("popup", () => {
   });
 });
 
-async function renderPopup(storage: TranslatorStorage) {
+async function renderPopup(storage: TranslatorStorage, notifyEnabledState?: (enabled: boolean) => Promise<void>) {
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
 
   await act(async () => {
-    root?.render(<App storage={storage} />);
+    root?.render(<App storage={storage} notifyEnabledState={notifyEnabledState} />);
   });
 }
 
@@ -117,6 +133,18 @@ function createFakeTranslatorStorage(): TranslatorStorage {
     },
     async saveUserDictionary(next) {
       dictionary = next;
+    }
+  };
+}
+
+function createFakeToggleMessenger(error?: Error) {
+  const calls: boolean[] = [];
+
+  return {
+    calls,
+    async notifyEnabledState(enabled: boolean) {
+      calls.push(enabled);
+      if (error) throw error;
     }
   };
 }

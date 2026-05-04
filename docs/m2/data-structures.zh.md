@@ -2,6 +2,11 @@
 
 M2 沿用 M1 的 `KeywordEntry`、`KeywordDictionary`、`DictionaryImportResult`、`MatchResult` 和 `InjectionRecord`。
 
+## 内置词库领域
+
+- `software`：基础软件工程词汇，例如 `Software Engineering`、`API`、`documentation`。
+- `ai`：常用 AI 术语，例如 `Artificial Intelligence`、`Large Language Model`、`Prompt Engineering`、`RAG`、`Agent` 和 `Agents`。
+
 ## TranslatorSettings
 
 表示扩展运行设置。

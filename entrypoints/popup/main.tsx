@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { browser } from "wxt/browser";
 import {
   builtinDictionary,
   createDictionaryExport,
@@ -12,14 +13,16 @@ import {
   type TranslatorSettings,
   type TranslatorStorage
 } from "../../src/core/storage";
+import { SET_ENABLED_MESSAGE } from "../../src/core/messages";
 import type { KeywordDictionary } from "../../src/core/types";
 import "./style.css";
 
 interface AppProps {
   storage?: TranslatorStorage;
+  notifyEnabledState?: (enabled: boolean) => Promise<void>;
 }
 
-export function App({ storage = createBrowserTranslatorStorage() }: AppProps) {
+export function App({ storage = createBrowserTranslatorStorage(), notifyEnabledState = notifyActiveTabEnabledState }: AppProps) {
   const [settings, setSettings] = useState<TranslatorSettings>(defaultSettings);
   const [userDictionary, setUserDictionary] = useState<KeywordDictionary | undefined>();
   const [error, setError] = useState("");
@@ -52,6 +55,12 @@ export function App({ storage = createBrowserTranslatorStorage() }: AppProps) {
     const next = { ...settings, enabled: !settings.enabled };
     setSettings(next);
     await storage.saveSettings(next);
+
+    try {
+      await notifyEnabledState(next.enabled);
+    } catch {
+      // Some pages cannot receive extension messages. The saved setting still applies after reload/new pages.
+    }
   }
 
   async function importDictionary(file: File | undefined) {
@@ -143,6 +152,16 @@ export function App({ storage = createBrowserTranslatorStorage() }: AppProps) {
       ) : null}
     </main>
   );
+}
+
+async function notifyActiveTabEnabledState(enabled: boolean): Promise<void> {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (tab?.id === undefined) return;
+
+  await browser.tabs.sendMessage(tab.id, {
+    type: SET_ENABLED_MESSAGE,
+    enabled
+  });
 }
 
 async function readFileText(file: File): Promise<string> {

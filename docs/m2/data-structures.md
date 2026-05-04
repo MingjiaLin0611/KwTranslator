@@ -2,6 +2,11 @@
 
 M2 keeps the M1 `KeywordEntry`, `KeywordDictionary`, `DictionaryImportResult`, `MatchResult`, and `InjectionRecord` contracts.
 
+## Builtin Dictionary Domains
+
+- `software`: foundational software engineering terms such as `Software Engineering`, `API`, and `documentation`.
+- `ai`: common AI terminology such as `Artificial Intelligence`, `Large Language Model`, `Prompt Engineering`, `RAG`, `Agent`, and `Agents`.
+
 ## TranslatorSettings
 
 Represents extension runtime settings.

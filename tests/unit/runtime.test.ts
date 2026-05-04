@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { runPageTranslation } from "@/core/runtime";
+import { createPageTranslationController, runPageTranslation } from "@/core/runtime";
 import { defaultSettings, type TranslatorStorage } from "@/core/storage";
 import type { KeywordDictionary } from "@/core/types";
 
@@ -55,6 +55,41 @@ describe("runtime", () => {
     doc.body.remove();
 
     await expect(runPageTranslation(doc, createStorage({}))).resolves.toEqual([]);
+  });
+
+  it("restores translated text when disabled and translates again when re-enabled", async () => {
+    document.body.innerHTML = "<p>Prompt Engineering helps Agents use RAG.</p><code>RAG</code>";
+    const controller = createPageTranslationController(document, createStorage({}));
+
+    await controller.applyEnabledState(true);
+
+    expect(document.querySelector("p")?.textContent).toContain("Prompt Engineering(提示词工程)");
+    expect(document.querySelector("p")?.textContent).toContain("Agents(智能体)");
+    expect(document.querySelector("p")?.textContent).toContain("RAG(检索增强生成)");
+    expect(document.querySelector("code")?.textContent).toBe("RAG");
+
+    await controller.applyEnabledState(false);
+
+    expect(document.querySelector("p")?.textContent).toBe("Prompt Engineering helps Agents use RAG.");
+    expect(document.querySelector("code")?.textContent).toBe("RAG");
+
+    await controller.applyEnabledState(true);
+
+    expect(document.querySelector("p")?.textContent).toContain("Prompt Engineering(提示词工程)");
+    expect(document.querySelector("p")?.textContent).not.toContain("提示词工程)(提示词工程");
+  });
+
+  it("skips removed text nodes while restoring disabled state", async () => {
+    document.body.innerHTML = "<p>Software Engineering</p>";
+    const paragraph = document.querySelector("p");
+    const controller = createPageTranslationController(document, createStorage({}));
+
+    await controller.applyEnabledState(true);
+    paragraph?.remove();
+
+    await expect(controller.applyEnabledState(false)).resolves.toEqual([
+      expect.objectContaining({ success: false, skipReason: "node-removed" })
+    ]);
   });
 });
 

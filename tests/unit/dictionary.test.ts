@@ -22,6 +22,44 @@ describe("dictionary", () => {
     );
   });
 
+  it("contains the builtin AI common vocabulary", () => {
+    expect(validateDictionary(builtinDictionary).valid).toBe(true);
+    expect(builtinDictionary.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "Artificial Intelligence",
+          translation: "人工智能",
+          domain: "ai"
+        }),
+        expect.objectContaining({
+          keyword: "Large Language Model",
+          translation: "大语言模型",
+          domain: "ai"
+        }),
+        expect.objectContaining({
+          keyword: "Prompt Engineering",
+          translation: "提示词工程",
+          domain: "ai"
+        }),
+        expect.objectContaining({
+          keyword: "RAG",
+          translation: "检索增强生成",
+          domain: "ai"
+        }),
+        expect.objectContaining({
+          keyword: "Agent",
+          translation: "智能体",
+          domain: "ai"
+        }),
+        expect.objectContaining({
+          keyword: "Agents",
+          translation: "智能体",
+          domain: "ai"
+        })
+      ])
+    );
+  });
+
   it("rejects invalid import entries without accepting the dictionary", () => {
     const result = validateDictionary({
       schemaVersion: 1,

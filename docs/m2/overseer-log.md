@@ -12,9 +12,10 @@
 - Popup file reading cannot rely only on `File.text()` because test environments and some runtimes may not provide it. Added a `FileReader` fallback.
 - The root TypeScript config did not provide a global `browser`. Storage now imports it explicitly from `wxt/browser`.
 - Running the default E2E and real extension E2E commands in parallel caused a Playwright trace artifact directory race and made the real extension E2E fail after `context.close()`. Rerunning `npm run test:e2e:extension` by itself passed; future gates should avoid running the two Playwright commands in parallel.
+- The enabled toggle was upgraded to immediate two-way control. Both the static page and the real webpage `https://huggingface.co/blog/sensenova/neo-unify` passed enabled, disabled, and re-enabled verification; screenshots are saved in `manual-test/screenshots/`.
 
 ## Synchronization Check
 
 - M2 feature, architecture, data-structure, and testing specs now exist in English and Chinese.
 - M2 behavior has dictionary, storage, runtime, and popup unit coverage.
-- Final tester and overseer checks are complete: unit tests, coverage, compile, build, default E2E, and real extension E2E run by itself all pass.
+- The latest tester and overseer checks include unit tests, coverage, compile, build, default E2E, real extension E2E, static-page screenshot verification, and Hugging Face real-page screenshot verification.

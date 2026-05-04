@@ -56,4 +56,17 @@ describe("injector", () => {
     expect(document.querySelector("code")?.textContent).toBe("Software Engineering");
     expect(document.querySelector("p")?.textContent).toBe("API(应用程序接口)");
   });
+
+  it("injects representative builtin AI vocabulary", async () => {
+    const { builtinDictionary } = await import("@/core/dictionary");
+    document.body.innerHTML =
+      "<p>Prompt Engineering helps Agents use RAG with a Large Language Model.</p>";
+
+    injectInlineTranslations(document.body, builtinDictionary.entries);
+
+    expect(document.body.textContent).toContain("Prompt Engineering(提示词工程)");
+    expect(document.body.textContent).toContain("Agents(智能体)");
+    expect(document.body.textContent).toContain("RAG(检索增强生成)");
+    expect(document.body.textContent).toContain("Large Language Model(大语言模型)");
+  });
 });

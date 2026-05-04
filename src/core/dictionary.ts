@@ -39,6 +39,226 @@ export const builtinDictionary: KeywordDictionary = {
       enabled: true,
       source: "builtin",
       version: 1
+    },
+    {
+      id: "artificial-intelligence",
+      keyword: "Artificial Intelligence",
+      translation: "人工智能",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "machine-learning",
+      keyword: "Machine Learning",
+      translation: "机器学习",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "deep-learning",
+      keyword: "Deep Learning",
+      translation: "深度学习",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "neural-network",
+      keyword: "Neural Network",
+      translation: "神经网络",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "large-language-model",
+      keyword: "Large Language Model",
+      translation: "大语言模型",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "llm",
+      keyword: "LLM",
+      translation: "大语言模型",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "prompt",
+      keyword: "Prompt",
+      translation: "提示词",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "prompt-engineering",
+      keyword: "Prompt Engineering",
+      translation: "提示词工程",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "agent",
+      keyword: "Agent",
+      translation: "智能体",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "agents",
+      keyword: "Agents",
+      translation: "智能体",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "embedding",
+      keyword: "Embedding",
+      translation: "嵌入",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "vector-database",
+      keyword: "Vector Database",
+      translation: "向量数据库",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "rag",
+      keyword: "RAG",
+      translation: "检索增强生成",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "retrieval-augmented-generation",
+      keyword: "Retrieval Augmented Generation",
+      translation: "检索增强生成",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "transformer",
+      keyword: "Transformer",
+      translation: "Transformer 模型",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "token",
+      keyword: "Token",
+      translation: "词元",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "inference",
+      keyword: "Inference",
+      translation: "推理",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "fine-tuning",
+      keyword: "Fine-tuning",
+      translation: "微调",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "phrase",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "dataset",
+      keyword: "Dataset",
+      translation: "数据集",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
+    },
+    {
+      id: "model",
+      keyword: "Model",
+      translation: "模型",
+      domain: "ai",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "builtin",
+      version: 1
     }
   ]
 };

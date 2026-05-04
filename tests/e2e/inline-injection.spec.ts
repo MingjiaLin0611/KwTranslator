@@ -63,6 +63,42 @@ test("browser harness injects imported user dictionary translations", async ({ p
   await expect(page.locator("body")).toContainText("Software Engineering(软件工程)");
 });
 
+test("browser harness injects builtin AI common vocabulary", async ({ page }) => {
+  const builtContentScript = path.resolve(".output/chrome-mv3/content-scripts/content.js");
+  test.skip(!fs.existsSync(builtContentScript), "Run npm run build before npm run test:e2e.");
+
+  await page.setContent("<main><p>Prompt Engineering helps Agents use RAG with a Large Language Model.</p></main>");
+  await installMockExtensionStorage(page);
+  await page.addScriptTag({ content: fs.readFileSync(builtContentScript, "utf8") });
+
+  await expect(page.locator("body")).toContainText("Prompt Engineering(提示词工程)");
+  await expect(page.locator("body")).toContainText("Agents(智能体)");
+  await expect(page.locator("body")).toContainText("RAG(检索增强生成)");
+  await expect(page.locator("body")).toContainText("Large Language Model(大语言模型)");
+});
+
+test("browser harness toggles translations off and on immediately", async ({ page }) => {
+  const builtContentScript = path.resolve(".output/chrome-mv3/content-scripts/content.js");
+  test.skip(!fs.existsSync(builtContentScript), "Run npm run build before npm run test:e2e.");
+
+  await page.setContent("<main><p>Prompt Engineering helps Agents use RAG.</p><code>RAG</code></main>");
+  await installMockExtensionStorage(page);
+  await page.addScriptTag({ content: fs.readFileSync(builtContentScript, "utf8") });
+
+  await expect(page.locator("p")).toContainText("Prompt Engineering(提示词工程)");
+
+  await dispatchSetEnabledMessage(page, false);
+
+  await expect(page.locator("p")).toHaveText("Prompt Engineering helps Agents use RAG.");
+  await expect(page.locator("code")).toHaveText("RAG");
+
+  await dispatchSetEnabledMessage(page, true);
+
+  await expect(page.locator("p")).toContainText("Prompt Engineering(提示词工程)");
+  await expect(page.locator("p")).toContainText("Agents(智能体)");
+  await expect(page.locator("p")).toContainText("RAG(检索增强生成)");
+});
+
 test("built extension injects inline translations on a real page", async () => {
   const extensionPath = path.resolve(".output/chrome-mv3");
   test.skip(!fs.existsSync(extensionPath), "Run npm run build before npm run test:e2e.");
@@ -115,6 +151,7 @@ function copyExtensionToAsciiTemp(extensionPath: string): string {
 async function installMockExtensionStorage(page: { evaluate: (fn: (initialData?: Record<string, unknown>) => void, data?: Record<string, unknown>) => Promise<void> }, initialData: Record<string, unknown> = {}): Promise<void> {
   await page.evaluate((data) => {
     const store = { ...data };
+    const messageListeners: Array<(message: unknown, sender: unknown, sendResponse: (response: unknown) => void) => boolean | void> = [];
     const area = {
       async get(keys?: string | string[]) {
         if (!keys) return { ...store };
@@ -137,7 +174,18 @@ async function installMockExtensionStorage(page: { evaluate: (fn: (initialData?:
 
     Object.assign(globalThis, {
       chrome: {
-        runtime: { id: "kw-translator-e2e" },
+        runtime: {
+          id: "kw-translator-e2e",
+          onMessage: {
+            addListener(listener: (message: unknown, sender: unknown, sendResponse: (response: unknown) => void) => boolean | void) {
+              messageListeners.push(listener);
+            },
+            removeListener(listener: (message: unknown, sender: unknown, sendResponse: (response: unknown) => void) => boolean | void) {
+              const index = messageListeners.indexOf(listener);
+              if (index >= 0) messageListeners.splice(index, 1);
+            }
+          }
+        },
         storage: {
           local: area,
           session: area,
@@ -146,7 +194,34 @@ async function installMockExtensionStorage(page: { evaluate: (fn: (initialData?:
         }
       }
     });
+
+    Object.assign(globalThis, {
+      __kwTranslatorDispatchMessage(message: unknown) {
+        return Promise.all(
+          messageListeners.map(
+            (listener) =>
+              new Promise((resolve) => {
+                const returned = listener(message, {}, resolve);
+                if (!returned) resolve(undefined);
+              })
+          )
+        );
+      }
+    });
   }, initialData);
+}
+
+async function dispatchSetEnabledMessage(page: { evaluate: (fn: (enabled: boolean) => Promise<unknown>, enabled: boolean) => Promise<unknown> }, enabled: boolean): Promise<void> {
+  await page.evaluate(
+    async (nextEnabled) =>
+      (globalThis as typeof globalThis & {
+        __kwTranslatorDispatchMessage: (message: unknown) => Promise<unknown>;
+      }).__kwTranslatorDispatchMessage({
+        type: "KW_TRANSLATOR_SET_ENABLED",
+        enabled: nextEnabled
+      }),
+    enabled
+  );
 }
 
 function findLocalPlaywrightChromium(): string | undefined {
