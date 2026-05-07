@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   builtinDictionary,
+  CUSTOM_DICTIONARY_SCHEMA_VERSION,
+  DEFAULT_CUSTOM_DICTIONARY_NAME,
+  createDefaultCustomDictionaryCollection,
   createDictionaryExport,
   mergeDictionaries,
   parseDictionaryImport,
   validateDictionary
 } from "@/core/dictionary";
-import type { KeywordDictionary } from "@/core/types";
+import type { CustomDictionaryCollection, KeywordDictionary } from "@/core/types";
 
 describe("dictionary", () => {
   it("validates the builtin dictionary and exposes Software Engineering", () => {
@@ -179,6 +182,27 @@ describe("dictionary", () => {
 
     expect(parsed.exportedAt).toEqual(expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/));
     expect(parsed.entries).toHaveLength(1);
+  });
+
+  it("creates the default M3 custom dictionary collection schema", () => {
+    const collection: CustomDictionaryCollection = createDefaultCustomDictionaryCollection("2026-05-07T00:00:00.000Z");
+
+    expect(collection).toEqual({
+      schemaVersion: CUSTOM_DICTIONARY_SCHEMA_VERSION,
+      activeDictionaryId: "default-custom-dictionary",
+      updatedAt: "2026-05-07T00:00:00.000Z",
+      dictionaries: [
+        {
+          id: "default-custom-dictionary",
+          name: DEFAULT_CUSTOM_DICTIONARY_NAME,
+          enabled: true,
+          order: 0,
+          entries: [],
+          createdAt: "2026-05-07T00:00:00.000Z",
+          updatedAt: "2026-05-07T00:00:00.000Z"
+        }
+      ]
+    });
   });
 });
 

@@ -1,6 +1,9 @@
-import type { DictionaryImportResult, KeywordDictionary, KeywordEntry } from "./types";
+import type { CustomDictionaryCollection, DictionaryImportResult, KeywordDictionary, KeywordEntry } from "./types";
 
 export const DICTIONARY_SCHEMA_VERSION = 1;
+export const CUSTOM_DICTIONARY_SCHEMA_VERSION = 1;
+export const DEFAULT_CUSTOM_DICTIONARY_NAME = "我的词汇表";
+export const DEFAULT_CUSTOM_DICTIONARY_ID = "default-custom-dictionary";
 
 export const builtinDictionary: KeywordDictionary = {
   schemaVersion: DICTIONARY_SCHEMA_VERSION,
@@ -344,6 +347,25 @@ export function createDictionaryExport(dictionary: KeywordDictionary): string {
     null,
     2
   );
+}
+
+export function createDefaultCustomDictionaryCollection(now = new Date().toISOString()): CustomDictionaryCollection {
+  return {
+    schemaVersion: CUSTOM_DICTIONARY_SCHEMA_VERSION,
+    dictionaries: [
+      {
+        id: DEFAULT_CUSTOM_DICTIONARY_ID,
+        name: DEFAULT_CUSTOM_DICTIONARY_NAME,
+        enabled: true,
+        order: 0,
+        entries: [],
+        createdAt: now,
+        updatedAt: now
+      }
+    ],
+    activeDictionaryId: DEFAULT_CUSTOM_DICTIONARY_ID,
+    updatedAt: now
+  };
 }
 
 function validateEntry(entry: unknown): string | undefined {

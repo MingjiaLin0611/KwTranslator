@@ -22,6 +22,24 @@ export interface KeywordDictionary {
   exportedAt?: string;
 }
 
+export interface CustomDictionary {
+  id: string;
+  name: string;
+  enabled: boolean;
+  order: number;
+  entries: KeywordEntry[];
+  createdAt: string;
+  updatedAt: string;
+  exportedAt?: string;
+}
+
+export interface CustomDictionaryCollection {
+  schemaVersion: number;
+  dictionaries: CustomDictionary[];
+  activeDictionaryId: string;
+  updatedAt: string;
+}
+
 export interface RejectedDictionaryEntry {
   entry: unknown;
   reason: string;
