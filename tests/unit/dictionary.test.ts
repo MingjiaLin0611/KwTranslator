@@ -3,13 +3,19 @@ import {
   builtinDictionary,
   CUSTOM_DICTIONARY_SCHEMA_VERSION,
   DEFAULT_CUSTOM_DICTIONARY_NAME,
+  createManualKeywordEntry,
   createDefaultCustomDictionaryCollection,
   createDictionaryExport,
+  hasDuplicateKeywordInDictionary,
   mergeDictionaries,
+  moveCustomDictionary,
+  normalizeCustomKeyword,
   parseDictionaryImport,
+  renameCustomDictionaryCopy,
+  sortCustomDictionariesByOrder,
   validateDictionary
 } from "@/core/dictionary";
-import type { CustomDictionaryCollection, KeywordDictionary } from "@/core/types";
+import type { CustomDictionary, CustomDictionaryCollection, KeywordDictionary } from "@/core/types";
 
 describe("dictionary", () => {
   it("validates the builtin dictionary and exposes Software Engineering", () => {
@@ -204,6 +210,80 @@ describe("dictionary", () => {
       ]
     });
   });
+
+  it("normalizes custom keywords by trimming and lowercasing", () => {
+    expect(normalizeCustomKeyword("  API  ")).toBe("api");
+    expect(normalizeCustomKeyword(" React ")).toBe("react");
+  });
+
+  it("creates manual user entries with M3 default fields", () => {
+    expect(
+      createManualKeywordEntry({
+        dictionaryId: "frontend",
+        keyword: " React ",
+        translation: " React 框架 "
+      })
+    ).toEqual({
+      id: "frontend-react",
+      keyword: "React",
+      translation: "React 框架",
+      domain: "frontend",
+      caseSensitive: false,
+      matchStrategy: "word-boundary",
+      enabled: true,
+      source: "user",
+      version: 1
+    });
+  });
+
+  it("detects duplicate normalized keywords inside one custom dictionary", () => {
+    const dictionary = customDictionary("frontend", "Frontend", 0, [
+      userEntry("react-a", "React", "React 框架"),
+      userEntry("react-b", " react ", "重复 React")
+    ]);
+
+    expect(hasDuplicateKeywordInDictionary(dictionary, "REACT")).toBe(true);
+    expect(hasDuplicateKeywordInDictionary(dictionary, "Vue")).toBe(false);
+    expect(hasDuplicateKeywordInDictionary(dictionary, "REACT", "react-a")).toBe(true);
+    expect(hasDuplicateKeywordInDictionary(dictionary, "REACT", "react-b")).toBe(true);
+  });
+
+  it("sorts and moves custom dictionaries by order", () => {
+    const dictionaries = [
+      customDictionary("backend", "Backend", 2, []),
+      customDictionary("frontend", "Frontend", 0, []),
+      customDictionary("ai", "AI", 1, [])
+    ];
+
+    expect(sortCustomDictionariesByOrder(dictionaries).map((dictionary) => dictionary.id)).toEqual([
+      "frontend",
+      "ai",
+      "backend"
+    ]);
+
+    expect(moveCustomDictionary(dictionaries, "backend", -1).map((dictionary) => [dictionary.id, dictionary.order])).toEqual([
+      ["frontend", 0],
+      ["backend", 1],
+      ["ai", 2]
+    ]);
+
+    expect(moveCustomDictionary(dictionaries, "frontend", -1).map((dictionary) => dictionary.id)).toEqual([
+      "frontend",
+      "ai",
+      "backend"
+    ]);
+  });
+
+  it("renames imported custom dictionaries as copies without mutating the source", () => {
+    const imported = customDictionary("ai-import", "AI 词汇表", 0, []);
+    const renamed = renameCustomDictionaryCopy(imported, [
+      customDictionary("ai-local", "AI 词汇表", 0, []),
+      customDictionary("ai-local-2", "AI 词汇表 (2)", 1, [])
+    ]);
+
+    expect(renamed).toEqual(expect.objectContaining({ id: "ai-import-copy-3", name: "AI 词汇表 (3)" }));
+    expect(imported).toEqual(expect.objectContaining({ id: "ai-import", name: "AI 词汇表" }));
+  });
 });
 
 function userEntry(id: string, keyword: string, translation: string) {
@@ -217,5 +297,17 @@ function userEntry(id: string, keyword: string, translation: string) {
     enabled: true,
     source: "user" as const,
     version: 1
+  };
+}
+
+function customDictionary(id: string, name: string, order: number, entries: ReturnType<typeof userEntry>[]): CustomDictionary {
+  return {
+    id,
+    name,
+    enabled: true,
+    order,
+    entries,
+    createdAt: "2026-05-08T00:00:00.000Z",
+    updatedAt: "2026-05-08T00:00:00.000Z"
   };
 }

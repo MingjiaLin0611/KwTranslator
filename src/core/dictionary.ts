@@ -1,4 +1,4 @@
-import type { CustomDictionaryCollection, DictionaryImportResult, KeywordDictionary, KeywordEntry } from "./types";
+import type { CustomDictionary, CustomDictionaryCollection, DictionaryImportResult, KeywordDictionary, KeywordEntry } from "./types";
 
 export const DICTIONARY_SCHEMA_VERSION = 1;
 export const CUSTOM_DICTIONARY_SCHEMA_VERSION = 1;
@@ -368,6 +368,88 @@ export function createDefaultCustomDictionaryCollection(now = new Date().toISOSt
   };
 }
 
+export function normalizeCustomKeyword(keyword: string): string {
+  return normalizeKeyword(keyword);
+}
+
+export function createManualKeywordEntry({
+  dictionaryId,
+  keyword,
+  translation
+}: {
+  dictionaryId: string;
+  keyword: string;
+  translation: string;
+}): KeywordEntry {
+  const trimmedKeyword = keyword.trim();
+
+  return {
+    id: `${dictionaryId}-${slugify(trimmedKeyword)}`,
+    keyword: trimmedKeyword,
+    translation: translation.trim(),
+    domain: dictionaryId,
+    caseSensitive: false,
+    matchStrategy: "word-boundary",
+    enabled: true,
+    source: "user",
+    version: 1
+  };
+}
+
+export function hasDuplicateKeywordInDictionary(
+  dictionary: CustomDictionary,
+  keyword: string,
+  ignoredEntryId?: string
+): boolean {
+  const normalized = normalizeKeyword(keyword);
+
+  return dictionary.entries.some(
+    (entry) => entry.id !== ignoredEntryId && normalizeKeyword(entry.keyword) === normalized
+  );
+}
+
+export function sortCustomDictionariesByOrder(dictionaries: CustomDictionary[]): CustomDictionary[] {
+  return [...dictionaries].sort((left, right) => left.order - right.order);
+}
+
+export function moveCustomDictionary(
+  dictionaries: CustomDictionary[],
+  dictionaryId: string,
+  direction: -1 | 1
+): CustomDictionary[] {
+  const sorted = sortCustomDictionariesByOrder(dictionaries);
+  const currentIndex = sorted.findIndex((dictionary) => dictionary.id === dictionaryId);
+  const targetIndex = currentIndex + direction;
+
+  if (currentIndex < 0 || targetIndex < 0 || targetIndex >= sorted.length) return sorted;
+
+  [sorted[currentIndex], sorted[targetIndex]] = [sorted[targetIndex]!, sorted[currentIndex]!];
+
+  return sorted.map((dictionary, order) => ({ ...dictionary, order }));
+}
+
+export function renameCustomDictionaryCopy(
+  imported: CustomDictionary,
+  existing: CustomDictionary[]
+): CustomDictionary {
+  const existingNames = new Set(existing.map((dictionary) => dictionary.name));
+  let name = imported.name;
+  let copyIndex = 2;
+
+  while (existingNames.has(name)) {
+    name = `${imported.name} (${copyIndex})`;
+    copyIndex += 1;
+  }
+
+  const suffix = copyIndex - 1;
+
+  return {
+    ...imported,
+    id: `${imported.id}-copy-${suffix}`,
+    name
+  };
+}
+
 function validateEntry(entry: unknown): string | undefined {
   if (!isRecord(entry)) return "entry must be an object";
   if (typeof entry.id !== "string") return "id is required";
@@ -388,6 +470,14 @@ function validateEntry(entry: unknown): string | undefined {
 
 function normalizeKeyword(keyword: string): string {
   return keyword.trim().toLocaleLowerCase();
+}
+
+function slugify(input: string): string {
+  const slug = normalizeKeyword(input)
+    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return slug || "entry";
 }
 
 function invalidImport(entry: unknown, reason: string): DictionaryImportResult {
