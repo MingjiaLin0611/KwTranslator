@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it } from "vitest";
 import { App } from "../../entrypoints/popup/main";
-import { builtinDictionary } from "@/core/dictionary";
+import { builtinDictionary, createDefaultCustomDictionaryCollection } from "@/core/dictionary";
 import { defaultSettings, type TranslatorStorage } from "@/core/storage";
 import type { KeywordDictionary } from "@/core/types";
 
@@ -133,6 +133,12 @@ function createFakeTranslatorStorage(): TranslatorStorage {
     },
     async saveUserDictionary(next) {
       dictionary = next;
+    },
+    async getCustomDictionaryCollection() {
+      return createDefaultCustomDictionaryCollection();
+    },
+    async saveCustomDictionaryCollection() {
+      return undefined;
     }
   };
 }

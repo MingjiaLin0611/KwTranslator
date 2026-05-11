@@ -1,5 +1,6 @@
 import { browser } from "wxt/browser";
-import type { KeywordDictionary } from "./types";
+import { createDefaultCustomDictionaryCollection } from "./dictionary";
+import type { CustomDictionaryCollection, KeywordDictionary } from "./types";
 
 export interface TranslatorSettings {
   enabled: boolean;
@@ -12,6 +13,8 @@ export interface TranslatorStorage {
   saveSettings(settings: TranslatorSettings): Promise<void>;
   getUserDictionary(): Promise<KeywordDictionary | undefined>;
   saveUserDictionary(dictionary: KeywordDictionary): Promise<void>;
+  getCustomDictionaryCollection(): Promise<CustomDictionaryCollection>;
+  saveCustomDictionaryCollection(collection: CustomDictionaryCollection): Promise<void>;
 }
 
 export const defaultSettings: TranslatorSettings = {
@@ -27,6 +30,7 @@ interface StorageArea {
 
 const SETTINGS_KEY = "kwTranslator.settings";
 const USER_DICTIONARY_KEY = "kwTranslator.userDictionary";
+const CUSTOM_DICTIONARIES_KEY = "kwTranslator.customDictionaries";
 
 export function createBrowserTranslatorStorage(storageArea: StorageArea = browser.storage.local): TranslatorStorage {
   return {
@@ -54,6 +58,16 @@ export function createBrowserTranslatorStorage(storageArea: StorageArea = browse
 
     async saveUserDictionary(dictionary) {
       await storageArea.set({ [USER_DICTIONARY_KEY]: dictionary });
+    },
+
+    async getCustomDictionaryCollection() {
+      const stored = await storageArea.get(CUSTOM_DICTIONARIES_KEY);
+      const collection = stored[CUSTOM_DICTIONARIES_KEY];
+      return isCustomDictionaryCollection(collection) ? collection : createDefaultCustomDictionaryCollection();
+    },
+
+    async saveCustomDictionaryCollection(collection) {
+      await storageArea.set({ [CUSTOM_DICTIONARIES_KEY]: collection });
     }
   };
 }
@@ -75,5 +89,16 @@ function isDictionary(value: unknown): value is KeywordDictionary {
     typeof (value as KeywordDictionary).schemaVersion === "number" &&
     typeof (value as KeywordDictionary).dictionaryVersion === "string" &&
     Array.isArray((value as KeywordDictionary).entries)
+  );
+}
+
+function isCustomDictionaryCollection(value: unknown): value is CustomDictionaryCollection {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as CustomDictionaryCollection).schemaVersion === "number" &&
+    Array.isArray((value as CustomDictionaryCollection).dictionaries) &&
+    typeof (value as CustomDictionaryCollection).activeDictionaryId === "string" &&
+    typeof (value as CustomDictionaryCollection).updatedAt === "string"
   );
 }

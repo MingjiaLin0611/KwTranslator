@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createDefaultCustomDictionaryCollection } from "@/core/dictionary";
 import { createPageTranslationController, runPageTranslation } from "@/core/runtime";
 import { defaultSettings, type TranslatorStorage } from "@/core/storage";
 import type { KeywordDictionary } from "@/core/types";
@@ -104,6 +105,8 @@ function createStorage({
     getSettings: vi.fn(async () => settings),
     saveSettings: vi.fn(),
     getUserDictionary: vi.fn(async () => userDictionary),
-    saveUserDictionary: vi.fn()
+    saveUserDictionary: vi.fn(),
+    getCustomDictionaryCollection: vi.fn(async () => createDefaultCustomDictionaryCollection()),
+    saveCustomDictionaryCollection: vi.fn()
   };
 }
